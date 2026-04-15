@@ -1,0 +1,65 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Packaging / build
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Testing / coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.mypy_cache/
+.ruff_cache/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# IDE / editor
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Logs
+*.log
+
+# Local databases / misc
+*.sqlite3
+
+# Model / artifact outputs
+artifacts/
+checkpoints/
+outputs/
+tmp/
+.cache/
+
+# Data
+data/processed/
+data/raw/*
+!data/raw/.gitkeep
+data/interim/
+*.csv
+
+# Docker
+*.pid
+
+# OS files
+Thumbs.db

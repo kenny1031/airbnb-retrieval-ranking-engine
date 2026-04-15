@@ -1,0 +1,26 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: airbnb
+      POSTGRES_PASSWORD: airbnb
+      POSTGRES_DB: airbnb
+    ports:
+      - "55432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  api:
+    build: .
+    container_name: airbnb-api
+    depends_on:
+      - postgres
+    environment:
+      DATABASE_URL: postgresql+psycopg://airbnb:airbnb@postgres:5432/airbnb
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+
+volumes:
+  postgres_data:
