@@ -173,43 +173,43 @@ A semantic feature vector is:
 
 $$\mathbf{x}_{q,i}=\begin{bmatrix}
 s_{\text{emb}}(q,d_i)\\
-\text{rating\_norm}\\
-\text{review\_count\_norm}\\
-\text{reviews\_per\_month\_norm}\\
-\text{availability\_365\_norm}\\
-\text{price\_norm}\\
-\text{price\_fit}\\
-\text{accommodates\_fit}\\
-\text{location\_match}\\
-\text{property\_type\_match}\\
-\text{room\_type\_match}\\
-\text{wifi\_match}\\
-\text{family\_home\_match}\\
-\text{flexible\_cancellation\_match}\\
-\text{instant\_bookable\_match}\\
+\text{rating norm}\\
+\text{review count norm}\\
+\text{reviews per month norm}\\
+\text{availability 365 norm}\\
+\text{price norm}\\
+\text{price fit}\\
+\text{accommodates fit}\\
+\text{location match}\\
+\text{property type match}\\
+\text{room type match}\\
+\text{wifi match}\\
+\text{family home match}\\
+\text{flexible cancellation match}\\
+\text{instant bookable match}\\
 \vdots\end{bmatrix}$$
 
 Some features are continuous normalised statistics. For example:
 
-$$\text{rating\_norm}=\frac{\text{rating}}{100}$$
+$$\text{rating norm}=\frac{\text{rating}}{100}$$
 
-$$\text{review\_count\_norm}=\min\left(\frac{\text{review\_count}}{500}, 1\right)$$
+$$\text{review count norm}=\min\left(\frac{\text{review count}}{500}, 1\right)$$
 
-$$\text{availability\_365\_norm}=\frac{\text{availability\_365}}{365}$$
+$$\text{availability 365 norm}=\frac{\text{availability 365}}{365}$$
 
 Other features are query-conditioned preference scores. For example, price fit is designed to reward listings that satisfy a budget-oriented query:
 
-$$\text{price\_fit}=\max\left(0, 1 - \frac{\text{price}}{300}\right)\quad \text{if the query expresses a cheap/budget preference}$$
+$$\text{price fit}=\max\left(0, 1 - \frac{\text{price}}{300}\right)\quad \text{if the query expresses a cheap/budget preference}$$
 
 Location matching can be expressed as a binary feature:
 
-$$\text{location\_match}(q, d_i)=\begin{cases}1, & \text{if the listing neighbourhood matches the parsed location intent} \\
+$$\text{location match}(q, d_i)=\begin{cases}1, & \text{if the listing neighbourhood matches the parsed location intent} \\
 0, & \text{otherwise}\end{cases}$$
 
 Similarly, wifi matching is defined as:
 
 $$
-\text{wifi\_match}(q, d_i)=\begin{cases}1, & \text{if the query requests wifi and the listing amenities contain wifi}\\
+\text{wifi match}(q, d_i)=\begin{cases}1, & \text{if the query requests wifi and the listing amenities contain wifi}\\
 0, & \text{otherwise}\end{cases}$$
 
 The same principle is used for room type, property type, cancellation policy, instant-bookable preference, and family-oriented listing suitability.
