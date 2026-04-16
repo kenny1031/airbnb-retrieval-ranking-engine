@@ -149,7 +149,7 @@ $$s_{\text{emb}}(q, d_i)=\cos(\tilde{\mathbf{z}}_q, \tilde{\mathbf{z}}_i)=\tilde
 
 Given a corpus of listings $\{d_1, \dots, d_N\}$, dense retrieval returns the top-$K$ candidates:
 
-$$\mathcal{C}_{\text{dense}}(q)=\operatorname{TopK}_{i \in \{1,\dots,N\}}\, s_{\text{emb}}(q, d_i)$$
+$$\mathcal{C}_{\text{dense}}(q)=\text{TopK}_{i \in \{1,\dots,N\}}\, s_{\text{emb}}(q, d_i)$$
 
 This stage is designed to capture semantic similarity beyond exact keyword overlap. In practice, this allows the system to retrieve conceptually related listings even when the wording in the query does not literally match the listing text.
 
@@ -295,7 +295,7 @@ $$
 
 2. rerank all candidates using the fused final score
 
-$$d_{(1)}, d_{(2)}, \dots, d_{(K)}=\operatorname{SortDescending}_{d_i \in \mathcal{C}(q)}\, s_{\text{final}}(q, d_i)$$
+$$d_{(1)}, d_{(2)}, \dots, d_{(K)}=\text{SortDescending}_{d_i \in \mathcal{C}(q)}\, s_{\text{final}}(q, d_i)$$
 
 The returned result list is therefore the top-ranked subset under a hybrid semantic-structured retrieval process followed by learned reranking.
 
