@@ -9,7 +9,7 @@ class SearchRequest(BaseModel):
 class SearchResultItem(BaseModel):
     listing_id: int
     name: str | None
-    neighbourhood_cleased: str | None
+    neighbourhood_cleansed: str | None
     room_type: str | None
     property_type: str | None
     price: float | None

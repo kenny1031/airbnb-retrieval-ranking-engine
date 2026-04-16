@@ -7,18 +7,50 @@ class ParsedQuery:
     min_price: float | None = None
     accommodates: int | None = None
     neighbourhood: str | None = None
+
     room_type: str | None = None
+    property_type: str | None = None
+
     wants_good_reviews: bool = False
     wants_cheap: bool = False
-    wants_entire_home: bool = False
+    wants_flexible_cancellation: bool = False
+    wants_instant_bookable: bool = False
+    prefers_entire_home: bool = False
 
 
-KNOWN_LOCATIONS = {
-    "sydney",
-    "bondi",
-    "manly",
-    "newtown",
-    'surry hills'
+LOCATION_ALIASES = {
+    "bondi beach": "Waverley",
+    "bondi": "Waverley",
+    "coogee": "Randwick",
+    "redfern": "Sydney",
+    "camperdown": "Sydney",
+    "surry hills": "Sydney",
+    "newtown": "Sydney",
+    "manly": "Manly",
+    "north sydney": "North Sydney",
+    "marrickville": "Marrickville",
+    "woollahra": "Woollahra",
+    "mosman": "Mosman",
+    "leichhardt": "Leichhardt",
+    "randwick": "Randwick",
+    "waverley": "Waverley",
+    "sydney": "Sydney",
+}
+
+PROPERTY_TYPE_KEYWORDS = {
+    "apartment": "Apartment",
+    "house": "House",
+    "townhouse": "Townhouse",
+    "loft": "Loft",
+    "villa": "Villa",
+    "studio": "Apartment",
+}
+
+ROOM_TYPE_KEYWORDS = {
+    "entire home": "Entire home/apt",
+    "entire place": "Entire home/apt",
+    "private room": "Private room",
+    "shared room": "Shared room",
 }
 
 
@@ -33,24 +65,36 @@ def parse_query(query: str) -> ParsedQuery:
     if "good reviews" in q or "highly rated" in q or "well reviewed" in q:
         parsed.wants_good_reviews = True
 
-    if "entire home" in q or "entire place" in q:
-        parsed.room_type = "Entire home/apt"
-        parsed.wants_entire_home = True
-    elif "private room" in q:
-        parsed.room_type = "Private room"
-    elif "shared room" in q:
-        parsed.room_type = "Shared room"
+    if "flexible cancellation" in q or "flexible" in q:
+        parsed.wants_flexible_cancellation = True
 
-    if "for two" in q or "2 guests" in q or "two guests" in q:
+    if "instant bookable" in q or "instant booking" in q:
+        parsed.wants_instant_bookable = True
+
+    for phrase, canonical in ROOM_TYPE_KEYWORDS.items():
+        if phrase in q:
+            parsed.room_type = canonical
+            break
+
+    for phrase, canonical in PROPERTY_TYPE_KEYWORDS.items():
+        if phrase in q:
+            parsed.property_type = canonical
+            if canonical == "Apartment" and parsed.room_type is None:
+                parsed.prefers_entire_home = True
+            break
+
+    if "for one" in q or "1 guest" in q or "one guest" in q:
+        parsed.accommodates = 1
+    elif "for two" in q or "2 guests" in q or "two guests" in q:
         parsed.accommodates = 2
+    elif "for three" in q or "3 guests" in q or "three guests" in q:
+        parsed.accommodates = 3
     elif "for four" in q or "4 guests" in q or "four guests" in q:
         parsed.accommodates = 4
-    elif "for one" in q or "1 guest" in q or "one guest" in q:
-        parsed.accommodates = 1
 
-    for loc in KNOWN_LOCATIONS:
-        if loc in q:
-            parsed.neighbourhood = loc.title()
+    for phrase, canonical in LOCATION_ALIASES.items():
+        if phrase in q:
+            parsed.neighbourhood = canonical
             break
 
     return parsed

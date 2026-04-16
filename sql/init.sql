@@ -24,3 +24,6 @@ CREATE TABLE listings (
     latitude FLOAT,
     longitude FLOAT
 );
+
+ALTER TABLE listings
+ADD COLUMN IF NOT EXISTS listing_text TEXT;
