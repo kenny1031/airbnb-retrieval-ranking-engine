@@ -141,28 +141,15 @@ with $\mathbf{z}_q, \mathbf{z}_i \in \mathbb{R}^m$ where, in the current impleme
 
 The embeddings are $L_2$-normalised:
 
-$$
-\tilde{\mathbf{z}} = \frac{\mathbf{z}}{\|\mathbf{z}\|_2}
-$$
+$$\tilde{\mathbf{z}} = \frac{\mathbf{z}}{\|\mathbf{z}\|_2}$$
 
 so the dense retrieval similarity is simply cosine similarity, which reduces to an inner product after normalisation:
 
-$$
-s_{\mathrm{emb}}(q, d_i)
-=
-\cos(\tilde{\mathbf{z}}_q, \tilde{\mathbf{z}}_i)
-=
-\tilde{\mathbf{z}}_q^\top \tilde{\mathbf{z}}_i
-$$
+$$s_{\mathrm{emb}}(q, d_i)=\cos(\tilde{\mathbf{z}}_q, \tilde{\mathbf{z}}_i)=\tilde{\mathbf{z}}_q^\top \tilde{\mathbf{z}}_i$$
 
 Given a corpus of listings $\{d_1, \dots, d_N\}$, dense retrieval returns the top-$K$ candidates:
 
-$$
-\mathcal{C}_{\mathrm{dense}}(q)
-=
-\operatorname{TopK}_{i \in \{1,\dots,N\}}
-\, s_{\mathrm{emb}}(q, d_i)
-$$
+$$\mathcal{C}_{\mathrm{dense}}(q)=\operatorname{TopK}_{i \in \{1,\dots,N\}}\, s_{\mathrm{emb}}(q, d_i)$$
 
 This stage is designed to capture semantic similarity beyond exact keyword overlap. In practice, this allows the system to retrieve conceptually related listings even when the wording in the query does not literally match the listing text.
 
@@ -170,9 +157,7 @@ This stage is designed to capture semantic similarity beyond exact keyword overl
 
 The current system uses the sentence-transformer model
 
-$$
-f_\theta = \texttt{all-MiniLM-L6-v2}
-$$
+$$f_\theta = \texttt{all-MiniLM-L6-v2}$$
 
 which provides a practical trade-off between semantic quality, embedding dimensionality, and inference speed.
 
@@ -180,18 +165,13 @@ which provides a practical trade-off between semantic quality, embedding dimensi
 
 For each query-listing pair $(q, d_i)$, the system constructs a feature vector
 
-$$
-\mathbf{x}_{q,i} \in \mathbb{R}^p
-$$
+$$\mathbf{x}_{q,i} \in \mathbb{R}^p$$
 
 that combines semantic relevance, listing quality, and structured preference-matching signals.
 
-A schematic feature vector is:
+A semantic feature vector is:
 
-$$
-\mathbf{x}_{q,i}
-=
-\begin{bmatrix}
+$$\mathbf{x}_{q,i}=\begin{bmatrix}
 s_{\mathrm{emb}}(q,d_i)\\
 \mathrm{rating\_norm}\\
 \mathrm{review\_count\_norm}\\
@@ -207,60 +187,30 @@ s_{\mathrm{emb}}(q,d_i)\\
 \mathrm{family\_home\_match}\\
 \mathrm{flexible\_cancellation\_match}\\
 \mathrm{instant\_bookable\_match}\\
-\vdots
-\end{bmatrix}
-$$
+\vdots\end{bmatrix}$$
 
 Some features are continuous normalised statistics. For example:
 
-$$
-\mathrm{rating\_norm}
-=
-\frac{\mathrm{rating}}{100}
-$$
+$$\mathrm{rating\_norm}=\frac{\mathrm{rating}}{100}$$
 
-$$
-\mathrm{review\_count\_norm}
-=
-\min\left(\frac{\mathrm{review\_count}}{500}, 1\right)
-$$
+$$\mathrm{review\_count\_norm}=\min\left(\frac{\mathrm{review\_count}}{500}, 1\right)$$
 
-$$
-\mathrm{availability\_365\_norm}
-=
-\frac{\mathrm{availability\_365}}{365}
-$$
+$$\mathrm{availability\_365\_norm}=\frac{\mathrm{availability\_365}}{365}$$
 
 Other features are query-conditioned preference scores. For example, price fit is designed to reward listings that satisfy a budget-oriented query:
 
-$$
-\mathrm{price\_fit}
-=
-\max\left(0, 1 - \frac{\mathrm{price}}{300}\right)
-\quad \text{if the query expresses a cheap/budget preference}
-$$
+$$\mathrm{price\_fit}=\max\left(0, 1 - \frac{\mathrm{price}}{300}\right)\quad \text{if the query expresses a cheap/budget preference}$$
 
 Location matching can be expressed as a binary feature:
 
-$$
-\mathrm{location\_match}(q, d_i)
-=
-\begin{cases}
-1, & \text{if the listing neighbourhood matches the parsed location intent} \\
-0, & \text{otherwise}
-\end{cases}
-$$
+$$\mathrm{location\_match}(q, d_i)=\begin{cases}1, & \text{if the listing neighbourhood matches the parsed location intent} \\
+0, & \text{otherwise}\end{cases}$$
 
 Similarly, wifi matching is defined as:
 
 $$
-\mathrm{wifi\_match}(q, d_i)
-=
-\begin{cases}
-1, & \text{if the query requests wifi and the listing amenities contain wifi} \\
-0, & \text{otherwise}
-\end{cases}
-$$
+\mathrm{wifi\_match}(q, d_i)=\begin{cases}1, & \text{if the query requests wifi and the listing amenities contain wifi}\\
+0, & \text{otherwise}\end{cases}$$
 
 The same principle is used for room type, property type, cancellation policy, instant-bookable preference, and family-oriented listing suitability.
 
@@ -268,46 +218,29 @@ The same principle is used for room type, property type, cancellation policy, in
 
 The reranker is a supervised model
 
-$$
-g_\phi : \mathbb{R}^p \to [0,1]
-$$
+$$g_\phi : \mathbb{R}^p \to [0,1]$$
 
 which maps each feature vector $\mathbf{x}_{q,i}$ to a learned relevance score:
 
-$$
-\hat{y}_{q,i} = g_\phi(\mathbf{x}_{q,i})
-$$
+$$\hat{y}_{q,i} = g_\phi(\mathbf{x}_{q,i})$$
 
 In the current implementation, $g_\phi$ is an XGBoost binary classifier. Its prediction can be interpreted as a learned estimate of the relevance of listing $d_i$ to query $q$.
 
 At a high level, boosted trees form an additive model:
 
-$$
-g_\phi(\mathbf{x})
-=
-\sigma\left(
+$$g_\phi(\mathbf{x})=\sigma\left(
 \sum_{t=1}^{T} f_t(\mathbf{x})
-\right),
-\qquad
-f_t \in \mathcal{F}
-$$
+\right),\qquad f_t \in \mathcal{F}$$
 
 where:
-
 - $T$ is the number of boosting rounds
 - $\mathcal{F}$ is the space of regression trees
 - $\sigma(\cdot)$ is the logistic link function used for binary relevance prediction
 
 The optimisation objective can be written as:
 
-$$
-\mathcal{L}
-=
-\sum_{n=1}^{M}
-\ell(y_n, \hat{y}_n)
-+
-\sum_{t=1}^{T} \Omega(f_t)
-$$
+$$\mathcal{L}=\sum_{n=1}^{M}\ell(y_n, \hat{y}_n)
++\sum_{t=1}^{T} \Omega(f_t)$$
 
 where:
 
@@ -317,26 +250,18 @@ where:
 
 This formulation allows the model to learn nonlinear interactions between semantic retrieval signals and structured listing features, which is particularly useful in ranking settings where relevance depends on multiple heterogeneous factors.
 
----
-
 ### Pseudo-Label Construction
 
 Because the dataset does not include real click, booking, or dwell-time feedback, the reranker is trained using pseudo-labels derived from a rule-based teacher score.
 
 Let the handcrafted teacher score for a query-listing pair be
 
-$$
-s_{\mathrm{rule}}(q, d_i)
+$$s_{\mathrm{rule}}(q, d_i)
 $$
 
 Then the binary pseudo-label is constructed as:
 
-$$
-y_{q,i}
-=
-\mathbf{1}
-\{s_{\mathrm{rule}}(q, d_i) \ge \tau\}
-$$
+$$y_{q,i}=\mathbf{1}\{s_{\mathrm{rule}}(q, d_i) \ge \tau\}$$
 
 where $\tau$ is a threshold chosen in configuration.
 
@@ -347,12 +272,7 @@ This means the learned reranker can be viewed as a form of distillation from a h
 At inference time, the final ranking score is not taken from the learned model alone. Instead, it is fused with the baseline rule-based score:
 
 $$
-s_{\mathrm{final}}(q, d_i)
-=
-\alpha \, s_{\mathrm{ml}}(q, d_i)
-+
-(1-\alpha)\, s_{\mathrm{rule}}(q, d_i)
-$$
+s_{\mathrm{final}}(q, d_i)=\alpha \, s_{\mathrm{ml}}(q, d_i)+(1-\alpha)\, s_{\mathrm{rule}}(q, d_i)$$
 
 where:
 - $s_{\mathrm{ml}}(q, d_i)$ is the XGBoost reranker score
@@ -370,21 +290,12 @@ The end-to-end system can be understood as a two-stage architecture:
 1. retrieve a candidate set
 
 $$
-\mathcal{C}(q)
-=
-\mathcal{C}_{\mathrm{dense}}(q)
-\cup
-\mathcal{C}_{\mathrm{structured}}(q)
-$$
+\mathcal{C}(q)=\mathcal{C}_{\mathrm{dense}}(q)
+\cup\mathcal{C}_{\mathrm{structured}}(q)$$
 
 2. rerank all candidates using the fused final score
 
-$$
-d_{(1)}, d_{(2)}, \dots, d_{(K)}
-=
-\operatorname{SortDescending}_{d_i \in \mathcal{C}(q)}
-\, s_{\mathrm{final}}(q, d_i)
-$$
+$$d_{(1)}, d_{(2)}, \dots, d_{(K)}=\operatorname{SortDescending}_{d_i \in \mathcal{C}(q)}\, s_{\mathrm{final}}(q, d_i)$$
 
 The returned result list is therefore the top-ranked subset under a hybrid semantic-structured retrieval process followed by learned reranking.
 
