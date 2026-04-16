@@ -133,6 +133,7 @@ This improves stability while preserving interpretable explanations.
 ### Dense Semantic Retrieval
 Let a user query be denoted by $q$, and let a listing text be denoted by $d_i$.  
 A sentence-transformer encoder $f_\theta(\cdot)$ maps both queries and listings into a shared embedding space:
+
 $$\mathbf{z}_q = f_\theta(q), \quad \mathbf{z}_i = f_\theta(d_i)$$
 
 with $\mathbf{z}_q, \mathbf{z}_i \in \mathbb{R}^m$ where, in the current implementation, $m = 384$.
