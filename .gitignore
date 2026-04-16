@@ -1,4 +1,6 @@
+# =========================
 # Python
+# =========================
 __pycache__/
 *.py[cod]
 *$py.class
@@ -7,59 +9,85 @@ __pycache__/
 .venv/
 venv/
 env/
+ENV/
 
-# Environment variables
-.env
-.env.*
-!.env.example
-
-# Packaging / build
-build/
-dist/
-*.egg-info/
-.eggs/
-
-# Testing / coverage
+# Python tooling
 .pytest_cache/
-.coverage
-.coverage.*
-htmlcov/
-.tox/
 .mypy_cache/
 .ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
 
 # Jupyter
 .ipynb_checkpoints/
 
-# IDE / editor
-.vscode/
-.idea/
-*.swp
-*.swo
+# macOS
 .DS_Store
 
-# Logs
+# Environment files
+.env
+.env.*
+!.env.example
+
+# =========================
+# Build / logs
+# =========================
 *.log
-
-# Local databases / misc
-*.sqlite3
-
-# Model / artifact outputs
-artifacts/
-checkpoints/
-outputs/
+logs/
 tmp/
-.cache/
+temp/
 
+# =========================
+# PyCharm / IDE
+# =========================
+.idea/
+*.iml
+
+# VS Code
+.vscode/
+
+# =========================
+# Frontend
+# =========================
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/.DS_Store
+
+# =========================
+# Model artifacts
+# =========================
+model/artifacts/*.npy
+model/artifacts/*.joblib
+model/artifacts/*.pkl
+model/artifacts/*.pt
+model/artifacts/*.bin
+
+# Keep small metadata/config artifacts if useful
+!model/artifacts/*metrics*.json
+!model/artifacts/*feature*.json
+!model/artifacts/*model*.txt
+
+# =========================
 # Data
-data/processed/
-data/raw/*
-!data/raw/.gitkeep
+# =========================
+data/raw/
 data/interim/
-*.csv
+data/processed/
 
-# Docker
+# Keep folder structure if needed
+!data/raw/.gitkeep
+!data/interim/.gitkeep
+!data/processed/.gitkeep
+
+# =========================
+# Docker / local volumes
+# =========================
+postgres_data/
 *.pid
 
-# OS files
+# =========================
+# OS / misc
+# =========================
 Thumbs.db
