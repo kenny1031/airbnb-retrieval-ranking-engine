@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.dependencies import get_db
 from app.schemas import SearchRequest, SearchResponse, SearchResultItem
-
+from model.ml_reranker import score_listing_ml
 from retrieval.parser import parse_query
 from retrieval.candidate_generator import generate_candidates
 from retrieval.reranker import score_listing
@@ -36,11 +36,23 @@ def search_listings(
 
     ranked = []
     for listing in candidates:
-        score, explanations = score_listing(
-            listing,
-            parsed,
-            text_similarity=similarity_map.get(listing.id, 0.0)
+        text_similarity = similarity_map.get(listing.id, 0.0)
+
+        ml_score = score_listing_ml(
+            query=payload.query,
+            listing=listing,
+            parsed=parsed,
+            text_similarity=text_similarity,
         )
+
+        rule_score, explanations = score_listing(
+            listing=listing,
+            parsed=parsed,
+            text_similarity=text_similarity,
+        )
+
+        final_score = 0.7 * ml_score + 0.3 * rule_score
+
         ranked.append(
             SearchResultItem(
                 listing_id=listing.id,
@@ -51,7 +63,7 @@ def search_listings(
                 price=listing.price,
                 review_scores_rating=listing.review_scores_rating,
                 number_of_reviews=listing.number_of_reviews,
-                ranking_score=score,
+                ranking_score=round(final_score, 4),
                 explanations=explanations,
             )
         )
