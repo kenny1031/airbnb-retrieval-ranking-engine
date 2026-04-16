@@ -35,10 +35,10 @@ def test_search_endpoint_returns_valid_shape():
         assert "explanations" in first
 
 
-def test_search_endpoint_bondi_query_not_empty():
+def test_search_endpoint_bondi_query_returns_waverley_results():
     payload = {
         "query": "private room near Bondi beach",
-        "top_k": 5
+        "top_k": 5,
     }
 
     response = client.post("/search", json=payload)
@@ -46,6 +46,45 @@ def test_search_endpoint_bondi_query_not_empty():
     assert response.status_code == 200
 
     data = response.json()
-    assert "results" in data
-    assert isinstance(data["results"], list)
     assert len(data["results"]) > 0
+
+    neighbourhoods = [item["neighbourhood_cleansed"] for item in data["results"]]
+    assert "Waverley" in neighbourhoods
+
+
+def test_search_endpoint_manly_wifi_query_returns_entire_home():
+    payload = {
+        "query": "entire home in Manly with wifi",
+        "top_k": 5,
+    }
+
+    response = client.post("/search", json=payload)
+
+    assert response.status_code == 200
+
+    data = response.json()
+    assert len(data["results"]) > 0
+
+    top_result = data["results"][0]
+    assert top_result["neighbourhood_cleansed"] == "Manly"
+    assert top_result["room_type"] == "Entire home/apt"
+
+
+def test_search_endpoint_family_randwick_query_returns_house_results():
+    payload = {
+        "query": "family-friendly house in Randwick",
+        "top_k": 5,
+    }
+
+    response = client.post("/search", json=payload)
+
+    assert response.status_code == 200
+
+    data = response.json()
+    assert len(data["results"]) > 0
+
+    property_types = [item["property_type"] for item in data["results"]]
+    neighbourhoods = [item["neighbourhood_cleansed"] for item in data["results"]]
+
+    assert "House" in property_types
+    assert "Randwick" in neighbourhoods

@@ -15,6 +15,8 @@ class ParsedQuery:
     wants_cheap: bool = False
     wants_flexible_cancellation: bool = False
     wants_instant_bookable: bool = False
+    wants_wifi: bool = False
+    wants_family_friendly: bool = False
     prefers_entire_home: bool = False
 
 
@@ -71,6 +73,15 @@ def parse_query(query: str) -> ParsedQuery:
     if "instant bookable" in q or "instant booking" in q:
         parsed.wants_instant_bookable = True
 
+    if "wifi" in q or "wi-fi" in q or "wireless internet" in q:
+        parsed.wants_wifi = True
+
+    if "family-friendly" in q or "family friendly" in q or "family stay" in q:
+        parsed.wants_family_friendly = True
+        parsed.prefers_entire_home = True
+        if parsed.accommodates is None:
+            parsed.accommodates = 4
+
     for phrase, canonical in ROOM_TYPE_KEYWORDS.items():
         if phrase in q:
             parsed.room_type = canonical
@@ -83,13 +94,29 @@ def parse_query(query: str) -> ParsedQuery:
                 parsed.prefers_entire_home = True
             break
 
-    if "for one" in q or "1 guest" in q or "one guest" in q:
+    if ("for one" in q
+        or "1 guest" in q
+        or "one guest" in q
+        or "one person" in q
+        or "1 person" in q):
         parsed.accommodates = 1
-    elif "for two" in q or "2 guests" in q or "two guests" in q:
+    elif ("for two" in q
+          or "2 guests" in q
+          or "two guests" in q
+          or "2 people" in q
+          or "two people" in q):
         parsed.accommodates = 2
-    elif "for three" in q or "3 guests" in q or "three guests" in q:
+    elif ("for three" in q
+          or "3 guests" in q
+          or "three guests" in q
+          or "3 people" in q
+          or "three people" in q):
         parsed.accommodates = 3
-    elif "for four" in q or "4 guests" in q or "four guests" in q:
+    elif ("for four" in q
+          or "4 guests" in q
+          or "four guests" in q
+          or "4 people" in q
+          or "four people" in q):
         parsed.accommodates = 4
 
     for phrase, canonical in LOCATION_ALIASES.items():

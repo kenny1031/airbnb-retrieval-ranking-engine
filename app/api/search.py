@@ -1,13 +1,14 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-
+from config.runtime_config import get_ranking_config
 from app.dependencies import get_db
 from app.schemas import SearchRequest, SearchResponse, SearchResultItem
+from model.embedding_retriever import retrieve_by_embedding, fetch_listings_by_ids
 from model.ml_reranker import score_listing_ml
 from retrieval.parser import parse_query
 from retrieval.candidate_generator import generate_candidates
 from retrieval.reranker import score_listing
-from retrieval.text_retriever import retrieve_by_text, fetch_listings_by_ids
+
 router = APIRouter()
 
 
@@ -18,16 +19,16 @@ def search_listings(
 ) -> SearchResponse:
     parsed = parse_query(payload.query)
 
-    text_hits = retrieve_by_text(db, payload.query, top_k=100)
-    text_ids = [hit.listing_id for hit in text_hits]
-    similarity_map = {hit.listing_id: hit.similarity for hit in text_hits}
+    embedding_hits = retrieve_by_embedding(payload.query, top_k=100)
+    embedding_ids = [listing_id for listing_id, _ in embedding_hits]
+    similarity_map = {listing_id: sim for listing_id, sim in embedding_hits}
 
     structured_candidates = generate_candidates(db, parsed, limit=100)
     structured_ids = [listing.id for listing in structured_candidates]
 
     merged_ids = []
     seen = set()
-    for listing_id in text_ids + structured_ids:
+    for listing_id in embedding_ids + structured_ids:
         if listing_id not in seen:
             seen.add(listing_id)
             merged_ids.append(listing_id)
@@ -51,8 +52,11 @@ def search_listings(
             text_similarity=text_similarity,
         )
 
-        final_score = 0.7 * ml_score + 0.3 * rule_score
-
+        ranking_cfg = get_ranking_config()
+        final_score = (
+            ranking_cfg["ml_weight"] * ml_score
+            + ranking_cfg["rule_weight"] * rule_score
+        )
         ranked.append(
             SearchResultItem(
                 listing_id=listing.id,

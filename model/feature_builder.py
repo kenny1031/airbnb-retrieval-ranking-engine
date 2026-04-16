@@ -81,6 +81,34 @@ def _preferred_entire_home_match(listing: Listing, prefers_entire_home: bool) ->
     return 1.0 if value == "Entire home/apt" else 0.0
 
 
+def _wifi_match(listing: Listing, wants_wifi: bool) -> float:
+    if not wants_wifi:
+        return 0.5
+    amenities = getattr(listing, "amenities", None)
+    if amenities and "wifi" in amenities.lower():
+        return 1.0
+    return 0.0
+
+
+def _family_home_match(listing: Listing, wants_family_friendly: bool) -> float:
+    if not wants_family_friendly:
+        return 0.5
+
+    room_type = getattr(listing, "room_type", None) or ""
+    property_type = getattr(listing, "property_type", None) or ""
+    accommodates = _clean_float(getattr(listing, "accommodates", None), 0.0)
+
+    score = 0.0
+    if room_type == "Entire home/apt":
+        score += 0.4
+    if property_type in {"House", "Apartment", "Townhouse", "Villa"}:
+        score += 0.3
+    if accommodates >= 4:
+        score += 0.3
+
+    return min(score, 1.0)
+
+
 # Building function
 def build_feature_row(
     query: str,
@@ -125,6 +153,12 @@ def build_feature_row(
         "instant_bookable_match": _instant_bookable_match(
             listing, parsed.wants_instant_bookable
         ),
+        "wifi_match": _wifi_match(listing, parsed.wants_wifi),
+        "family_home_match": _family_home_match(
+            listing, parsed.wants_family_friendly
+        ),
+        "query_wants_wifi": int(parsed.wants_wifi),
+        "query_wants_family_friendly": int(parsed.wants_family_friendly),
         "preferred_entire_home_match": _preferred_entire_home_match(
             listing, parsed.prefers_entire_home
         ),

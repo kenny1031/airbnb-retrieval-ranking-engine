@@ -10,11 +10,32 @@ def _clean_float(value: float | None, default: float=0.0) -> float:
         return default
     return float(value)
 
+
 def _safe_norm(value: float | None, max_value: float) -> float:
     value = _clean_float(value, 0.0)
     if max_value <= 0:
         return 0.0
     return min(max(value / max_value, 0.0), 1.0)
+
+
+def _has_wifi(listing: Listing) -> bool:
+    amenities = getattr(listing, "amenities", None)
+    return bool(amenities and "wifi" in amenities.lower())
+
+
+def _family_home_score(listing: Listing) -> float:
+    room_type = getattr(listing, "room_type", None) or ""
+    property_type = getattr(listing, "property_type", None) or ""
+    accommodates = _clean_float(getattr(listing, "accommodates", None), 0.0)
+
+    score = 0.0
+    if room_type == "Entire home/apt":
+        score += 0.4
+    if property_type in {"House", "Apartment", "Townhouse", "Villa"}:
+        score += 0.3
+    if accommodates >= 4:
+        score += 0.3
+    return min(score, 1.0)
 
 
 def score_listing(
@@ -84,6 +105,14 @@ def score_listing(
         if listing.instant_bookable.lower() == "t":
             score += 0.05
             explanations.append("instant bookable")
+
+    if parsed.wants_wifi and _has_wifi(listing):
+        score += 0.03
+        explanations.append("includes wifi")
+
+    if parsed.wants_family_friendly and _family_home_score(listing) >= 0.7:
+        score += 0.05
+        explanations.append("family-friendly fit")
 
     score = _clean_float(score, 0.0)
     return round(score, 4), explanations

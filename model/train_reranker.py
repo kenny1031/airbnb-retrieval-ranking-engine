@@ -9,12 +9,14 @@ from sklearn.metrics import (
     roc_auc_score
 )
 from sklearn.model_selection import train_test_split
+from config.runtime_config import get_xgboost_config
 
 
-DATA_PATH = "model/artifacts/training_data.csv"
-MODEL_PATH = "model/artifacts/xgb_reranker.joblib"
-METRICS_PATH = "model/artifacts/xgb_reranker_metrics.json"
-FEATURES_PATH = "model/artifacts/xgb_feature_columns.json"
+BASE_DIR = Path(__file__).resolve().parent.parent
+DATA_PATH = BASE_DIR / "model" / "artifacts" / "training_data.csv"
+MODEL_PATH = BASE_DIR / "model" / "artifacts" / "xgb_reranker.joblib"
+METRICS_PATH = BASE_DIR / "model" / "artifacts/xgb_reranker_metrics.json"
+FEATURES_PATH = BASE_DIR / "model" / "artifacts" / "xgb_feature_columns.json"
 
 DROP_COLUMNS = ["query", "listing_id", "rule_score", "label"]
 
@@ -34,15 +36,16 @@ def main():
     neg_count = int((y_train == 0).sum())
     scale_pos_weight = neg_count / max(pos_count, 1)
 
+    xgb_cfg = get_xgboost_config()
     model = XGBClassifier(
-        n_estimators=300,
-        max_depth=5,
-        learning_rate=0.05,
-        subsample=0.9,
-        colsample_bytree=0.9,
-        objective="binary:logistic",
-        eval_metric="logloss",
-        random_state=42,
+        n_estimators=xgb_cfg["n_estimators"],
+        max_depth=xgb_cfg["max_depth"],
+        learning_rate=xgb_cfg["learning_rate"],
+        subsample=xgb_cfg["subsample"],
+        colsample_bytree=xgb_cfg["colsample_bytree"],
+        objective=xgb_cfg["objective"],
+        eval_metric=xgb_cfg["eval_metric"],
+        random_state=xgb_cfg["random_state"],
         scale_pos_weight=scale_pos_weight,
     )
 

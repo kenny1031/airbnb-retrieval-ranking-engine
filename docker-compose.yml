@@ -1,6 +1,7 @@
 services:
   postgres:
     image: postgres:16
+    container_name: airbnb-postgres
     environment:
       POSTGRES_USER: airbnb
       POSTGRES_PASSWORD: airbnb
@@ -11,14 +12,21 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
   api:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: airbnb-api
-    depends_on:
-      - postgres
+    env_file:
+      - .env
     environment:
       DATABASE_URL: postgresql+psycopg://airbnb:airbnb@postgres:5432/airbnb
+      TOKENIZERS_PARALLELISM: "false"
+      OMP_NUM_THREADS: "1"
+      MKL_NUM_THREADS: "1"
     ports:
       - "8000:8000"
+    depends_on:
+      - postgres
     volumes:
       - .:/app
 

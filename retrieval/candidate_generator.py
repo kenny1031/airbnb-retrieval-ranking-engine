@@ -6,9 +6,10 @@ from retrieval.parser import ParsedQuery
 
 
 def generate_candidates(
-        db: Session,
-        parsed: ParsedQuery,
-        limit: int = 200) -> list[Listing]:
+    db: Session,
+    parsed: ParsedQuery,
+    limit: int = 200
+) -> list[Listing]:
     stmt = select(Listing)
 
     if parsed.max_price is not None:

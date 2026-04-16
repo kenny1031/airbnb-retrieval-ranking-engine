@@ -40,3 +40,18 @@ def test_parse_query_instant_bookable():
     assert parsed.neighbourhood == "Sydney"
     assert parsed.wants_cheap is True
     assert parsed.wants_instant_bookable is True
+
+
+def test_parse_query_wifi():
+    parsed = parse_query("entire home in Manly with wifi")
+    assert parsed.room_type == "Entire home/apt"
+    assert parsed.neighbourhood == "Manly"
+    assert parsed.wants_wifi is True
+
+
+def test_parse_query_family_friendly():
+    parsed = parse_query("family-friendly house in Randwick")
+    assert parsed.property_type == "House"
+    assert parsed.neighbourhood == "Randwick"
+    assert parsed.wants_family_friendly is True
+    assert parsed.prefers_entire_home is True

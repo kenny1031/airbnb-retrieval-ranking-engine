@@ -8,8 +8,9 @@ from model.feature_builder import build_feature_row
 from retrieval.parser import ParsedQuery
 
 
-MODEL_PATH = Path("model/artifacts/xgb_reranker.joblib")
-FEATURES_PATH = Path("model/artifacts/xgb_feature_columns.json")
+BASE_DIR = Path(__file__).resolve().parent.parent
+MODEL_PATH = BASE_DIR / "model" / "artifacts" / "xgb_reranker.joblib"
+FEATURES_PATH = BASE_DIR / "model" / "artifacts" / "xgb_feature_columns.json"
 
 _model = None
 _feature_columns = None

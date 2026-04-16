@@ -1,0 +1,22 @@
+embedding:
+  model_name: sentence-transformers/all-MiniLM-L6-v2
+  top_k: 100
+  normalize_embeddings: true
+  batch_size: 64
+
+xgboost:
+  n_estimators: 300
+  max_depth: 5
+  learning_rate: 0.05
+  subsample: 0.9
+  colsample_bytree: 0.9
+  objective: binary:logistic
+  eval_metric: logloss
+  random_state: 42
+
+ranking:
+  ml_weight: 0.7
+  rule_weight: 0.3
+
+training_data:
+  positive_label_threshold: 0.60

@@ -1,21 +1,23 @@
 import argparse
 from pathlib import Path
-
 import pandas as pd
 from sqlalchemy.orm import Session
-
+from config.runtime_config import get_training_data_config
 from app.db import SessionLocal
 from model.feature_builder import build_feature_row
+from model.embedding_retriever import (
+    retrieve_by_embedding,
+    fetch_listings_by_ids
+)
 from retrieval.candidate_generator import generate_candidates
 from retrieval.parser import parse_query
-from retrieval.text_retriever import (
-    fetch_listings_by_ids,
-    retrieve_by_text
-)
 
 
-DEFAULT_QUERIES_PATH = "model/queries.txt"
-DEFAULT_OUTPUT_PATH = "model/artifacts/training_data.csv"
+training_cfg = get_training_data_config()
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+DEFAULT_QUERIES_PATH = BASE_DIR / "model" / "queries.txt"
+DEFAULT_OUTPUT_PATH = BASE_DIR / "model" / "artifacts" / "training_data.csv"
 
 
 # Helpers
@@ -40,20 +42,20 @@ def merge_candidate_ids(
     return merged
 
 def make_label(rule_score: float) -> int:
-    return 1 if rule_score >= 0.60 else 0
+    return 1 if rule_score >= training_cfg["positive_label_threshold"] else 0
 
 
 def build_rows_for_query(db: Session, query: str) -> list[dict]:
     parsed = parse_query(query)
 
-    text_hits = retrieve_by_text(db, query, top_k=100)
-    text_ids = [hit.listing_id for hit in text_hits]
-    similarity_map = {hit.listing_id : hit.similarity for hit in text_hits}
+    embedding_hits = retrieve_by_embedding(query, top_k=100)
+    embedding_ids = [listing_id for listing_id, _ in embedding_hits]
+    similarity_map = {listing_id: sim for listing_id, sim in embedding_hits}
 
     structured_candidates = generate_candidates(db, parsed, limit=100)
     structured_ids = [listing.id for listing in structured_candidates]
 
-    merged_ids = merge_candidate_ids(text_ids, structured_ids)
+    merged_ids = merge_candidate_ids(embedding_ids, structured_ids)
     listings = fetch_listings_by_ids(db, merged_ids)
 
     rows: list[dict] = []

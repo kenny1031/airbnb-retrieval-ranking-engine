@@ -62,7 +62,7 @@ export default function ResultCard({ item }: ResultCardProps) {
           <strong>Reviews:</strong> {item.number_of_reviews ?? "N/A"}
         </span>
         <span>
-          <strong>Score:</strong> {item.ranking_score.toFixed(4)}
+          <strong>Relevance:</strong> {item.ranking_score.toFixed(4)}
         </span>
       </div>
 
