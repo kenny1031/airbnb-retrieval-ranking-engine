@@ -146,7 +146,7 @@ so the dense retrieval similarity is simply cosine similarity, which reduces to 
 
 $$s_{\text{emb}}(q, d_i)=\cos(\tilde{\mathbf{z}}_q, \tilde{\mathbf{z}}_i)=\tilde{\mathbf{z}}_q^\top \tilde{\mathbf{z}}_i$$
 
-Given a corpus of listings $\{d_1, \dots, d_N\}$, dense retrieval returns the top-$K$ candidates:
+Given a corpus of listings $\{d_1, \dots, d_N\}$, dense retrieval returns the top-K candidates:
 
 $$\mathcal{C}_{\text{dense}}(q)=\text{TopK}_{i \in \{1,\dots,N\}}\, s_{\text{emb}}(q, d_i)$$
 
